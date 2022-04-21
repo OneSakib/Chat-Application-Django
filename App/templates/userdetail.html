@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div class="container mt-3">
+        <h1 class="text-danger" id="user"></h1>
+        {% csrf_token %}
+        <a href="#" class="btn btn-success" data-action="{% if request.user not in user.followers.all %}
+                    Follow
+            {% else %}
+                Unfollow
+            {% endif %}" id="followbutton">
+            {% if request.user not in user.followers.all %}
+                Follow
+            {% else %}
+                Unfollow
+            {% endif %}
+        </a>
+    </div>
+{% endblock %}
+{% block js %}
+    <script>
+        $('#user').text(location.pathname.split('/')[2])
+        document.getElementById('followbutton').onclick = function () {
+            v = $('#followbutton').attr('data-action').trim()
+            data = {
+                'action': v,
+                'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').attr('value'),
+                'user': '{{ request.user }}',
+                'target': location.pathname.split('/')[2]
+
+            }
+            $.ajax(
+                {
+                    url: '{% url 'follow'  %}',
+                    data: data,
+                    type: 'post',
+                    success: function (response) {
+                        if (response['status'] == 'ok') {
+                            if (v == 'Follow') {
+                                $('#followbutton').text("Unfollow")
+                                $('#followbutton').attr('data-action', 'Unfollow')
+                                alert("Successfully Unfollow");
+                            } else {
+                                $('#followbutton').text("Follow")
+                                $('#followbutton').attr('data-action', 'Follow')
+                                alert("Successfully Follow");
+                            }
+                        }
+                    }
+                }
+            )
+
+        }
+    </script>
+
+{% endblock %}
